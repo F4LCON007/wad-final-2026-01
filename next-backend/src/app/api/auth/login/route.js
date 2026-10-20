@@ -51,10 +51,11 @@ export async function POST(req) {
       { status: 200 },
     );
 
+    // Cross-site cookie configuration for Vercel deployment
     response.cookies.set("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      secure: true,
+      sameSite: "none",
       maxAge: 86400,
       path: "/",
     });
