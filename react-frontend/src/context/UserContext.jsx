@@ -1,8 +1,6 @@
-//src/context/UseContext.jsx
+import { createContext, useEffect, useState } from "react";
 
-import { createContext, useEffect, useRef, useState } from "react";
-
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || "/api";
 
 export const UserContext = createContext();
 
@@ -13,7 +11,7 @@ export function UserProvider({ children }) {
   const fetchUser = async () => {
     try {
       const res = await fetch(`${API_URL}/auth/me`, {
-        // Crucial: This tells the browser to send the HTTP-only cookie!
+        // Crucial: Sends the HTTP-only cookie with cross-site credentials
         credentials: "include",
       });
 
@@ -30,12 +28,25 @@ export function UserProvider({ children }) {
     }
   };
 
+  const logout = async () => {
+    try {
+      await fetch(`${API_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      setUser(null);
+    }
+  };
+
   useEffect(() => {
     fetchUser();
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, setUser, fetchUser, loading }}>
+    <UserContext.Provider value={{ user, setUser, fetchUser, logout, loading }}>
       {children}
     </UserContext.Provider>
   );

@@ -5,7 +5,7 @@ import { UserContext } from "../context/UserContext";
 const API_URL = import.meta.env.VITE_API_URL || "/api";
 
 export default function DashboardPage() {
-  const { user, fetchUser, loading } = useContext(UserContext);
+  const { user, setUser, loading } = useContext(UserContext);
   const navigate = useNavigate();
 
   const [courses, setCourses] = useState([]);
@@ -45,12 +45,17 @@ export default function DashboardPage() {
   }, [user, loading, navigate]);
 
   const handleLogout = async () => {
-    await fetch(`${API_URL}/auth/logout`, {
-      method: "POST",
-      credentials: "include",
-    });
-    await fetchUser();
-    navigate("/login");
+    try {
+      await fetch(`${API_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (err) {
+      console.error("Logout request failed:", err);
+    } finally {
+      setUser(null);
+      navigate("/login");
+    }
   };
 
   const handleCreateCourse = async (e) => {
@@ -204,7 +209,11 @@ export default function DashboardPage() {
                   {user.username}
                 </p>
                 <span
-                  className={`text-[10px] font-medium leading-none ${user.role === "Teacher" ? "text-indigo-400" : "text-emerald-400"}`}
+                  className={`text-[10px] font-medium leading-none ${
+                    user.role === "Teacher"
+                      ? "text-indigo-400"
+                      : "text-emerald-400"
+                  }`}
                 >
                   {user.role}
                 </span>
@@ -715,7 +724,10 @@ export default function DashboardPage() {
                               <div
                                 className="h-full bg-emerald-500 transition-all duration-300"
                                 style={{
-                                  width: `${Math.min(100, (enrolledCount / c.maxStudent) * 100)}%`,
+                                  width: `${Math.min(
+                                    100,
+                                    (enrolledCount / c.maxStudent) * 100,
+                                  )}%`,
                                 }}
                               ></div>
                             </div>
@@ -757,7 +769,7 @@ export default function DashboardPage() {
                                   : isClosed
                                     ? "Registration Closed"
                                     : isCanceled
-                                      ? "Canceled"
+                                      ? "Course Canceled"
                                       : "Enroll Now"}
                               </span>
                             </button>
